@@ -1,0 +1,273 @@
+{
+  "main": "org.entcore.infra.Starter",
+  "port": 8001,
+  "mode": "dev",
+  "auto-redeploy": false,
+  "path-prefix": "infra",
+  "scripts-folder" : "../../scripts",
+  "app-registry": {
+    "name": "org.entcore~app-registry~1.6-SNAPSHOT",
+    "config": {
+      "main":"org.entcore.registry.AppRegistry",
+      "auto-redeploy": false,
+      "mode": "dev",
+      "address" : "wse.app.registry",
+      "port" : 8012
+    }
+  },
+  "neo4j-persistor": {
+    "name": "com.wse.neo4j~neo4jPersistor~1.2.4",
+    "config": {
+      "worker": true,
+      "multi-threaded": true,
+      "address": "wse.neo4j.persistor",
+      "datastore-path": "./data/tests/neo4j",
+      "neo4j" : {
+      	"node_auto_indexing" : "true",
+      	"node_keys_indexable" : "externalId"
+      }
+    }
+  },
+  "external-modules": [
+    {
+      "name": "io.vertx~mod-mongo-persistor~2.0.1-final-WSE",
+      "config": {
+        "worker": true,
+        "multi-threaded": true,
+        "address": "wse.mongodb.persistor",
+        "host": "localhost",
+        "port": 27017,
+        "db_name": "localhost:8090_gridfs",
+        "pool_size": 10
+      }
+    },
+    {
+      "name": "com.wse~gridfs-persistor~1.0.0",
+      "config": {
+        "worker": true,
+        "multi-threaded": true,
+        "address": "wse.gridfs.persistor",
+        "host": "localhost",
+        "port": 27017,
+        "db_name": "localhost:8090_gridfs",
+        "pool_size": 10
+      }
+    },{
+      "name" : "com.wse~mod-image-resizer~1.0.1",
+      "config" : {
+        "worker": true,
+        "multi-threaded": true,
+        "address" : "wse.image.resizer",
+        "gridfs" : {
+          "host": "localhost",
+          "port": 27017,
+          "db_name": "localhost:8090_gridfs",
+          "pool_size": 10
+        }
+      }
+    },
+    {
+      "name": "com.wse~http-proxy~1.0.0",
+      "config": {
+        "port": 8090,
+        "proxies": [
+          {
+            "location": "/",
+            "proxy_pass": "http://localhost:8017"
+          },
+          {
+            "location": "/infra",
+            "proxy_pass": "http://localhost:8001"
+          },
+          {
+            "location": "/directory",
+            "proxy_pass": "http://localhost:8003"
+          },
+          {
+            "location": "/history",
+            "proxy_pass": "http://localhost:8006"
+          },
+          {
+            "location": "/auth",
+            "proxy_pass": "http://localhost:8009"
+          },
+          {
+            "location": "/workspace",
+            "proxy_pass": "http://localhost:8011"
+          },
+          {
+            "location": "/appregistry",
+            "proxy_pass": "http://localhost:8012"
+          },
+          {
+            "location": "/communication",
+            "proxy_pass": "http://localhost:8015"
+          },
+          {
+            "location": "/userbook",
+            "proxy_pass": "http://localhost:8003"
+          },
+          {
+            "location": "/conversation",
+            "proxy_pass": "http://localhost:8019"
+          }
+        ]
+      }
+    },
+    {
+      "name": "io.vertx~mod-mailer~2.0.0-final",
+      "config": {
+        "address": "wse.email"
+      }
+    },
+    {
+      "name": "com.wse.tracer~tracer~1.0.0",
+      "config": {
+        "auto-redeploy": false,
+        "logger-name": "localhost:8090.tracer",
+        "address": "log.address",
+        "log-path": "data/log/"
+      }
+    },
+    {
+      "name": "org.entcore~auth~1.6-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.auth.Auth",
+        "port": 8009,
+        "auto-redeploy": false,
+        "mode": "dev",
+        "authenticationServer": {
+          "loginURL": "http://localhost:8090/auth/login",
+          "logoutURL": "http://localhost:8090/auth/logout",
+          "loginCallback": "http://localhost:8090",
+          "logoutCallback": "http://localhost:8090"
+        },
+        "host": "http://localhost:8090"
+      }
+    },
+    {
+      "name": "org.entcore~directory~1.6-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.directory.Directory",
+        "auto-redeploy": false,
+        "mode": "dev",
+        "host": "http://localhost:8090",
+        "createdUserEmail" : true,
+        "classDefaultRoles" : true,
+        "port": 8003,
+        "workspace-url": "localhost",
+        "workspace-port":8011,
+        "workspace-prefix" : "/workspace",
+        "user-book-data":{
+          "default-avatar": "no-avatar.jpg",
+          "default-mood" : "default",
+          "hobbies": ["sport","cinema", "animals", "music", "places"]
+        }
+      }
+    },
+    {
+      "name": "org.entcore~history~1.6-SNAPSHOT",
+      "config" : {
+        "main":"org.entcore.history.History",
+        "port": 8006,
+        "log-path": "/opt/localhost:8090/history/",
+        "mode" : "dev"
+      }
+    },
+    {
+      "name": "org.entcore~workspace~1.6-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.workspace.Workspace",
+        "auto-redeploy": false,
+        "mode": "dev",
+        "host": "http://localhost:8090",
+        "userbook-host": "http://localhost:8090",
+        "app-name": "Espace documentaire",
+        "app-address": "/workspace/workspace",
+        "app-icon": "workspace-large",
+        "port": 8011,
+        "mongo-address" : "wse.mongodb.persistor",
+        "gridfs-address" : "wse.gridfs.persistor"
+      }
+    },
+    {
+      "name": "org.entcore~session~1.6-SNAPSHOT",
+      "config": {
+        "session_timeout": 10800000,
+        "worker": true,
+        "address" : "wse.session"
+      }
+    },
+    {
+      "name": "org.entcore~communication~1.6-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.communication.Communication",
+        "auto-redeploy": false,
+        "mode": "dev",
+        "port": 8015,
+        "address" : "wse.communication",
+        "defaultCommunicationRules" : [
+          "(s:Structure)<-[:ADMINISTRATIVE_ATTACHMENT]-(start:User)-[:RELATED]->(end:User)",
+          "AND startProfile.name = 'Student' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
+          "AND startProfile.name = 'Relative' AND endProfile.name = 'Student' WITH startClassGroup as start, endClassGroup as end ",
+          "AND startProfile.name = 'Relative' AND endProfile.name = 'Teacher' WITH startClassGroup as start, endClassGroup as end ",
+          "AND startProfile.name IN ['Teacher', 'Personnel'] AND endProfile.name = 'Student' WITH startStructureGroup as start, endStructureGroup as end ",
+          "AND startProfile.name IN ['Teacher', 'Personnel'] AND endProfile.name = 'Relative' WITH startStructureGroup as start, endStructureGroup as end ",
+          "AND startProfile.name = 'Personnel' AND endProfile.name = 'Teacher' WITH startStructureGroup as start, endStructureGroup as end ",
+          "AND startProfile.name = 'Teacher' AND endProfile.name = 'Personnel' WITH startStructureGroup as start, endStructureGroup as end ",
+          "AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as start, userClass as end ",
+          "AND profile.name IN ['Teacher', 'Student', 'Relative'] WITH classGroup as end, userClass as start ",
+          "AND profile.name IN ['Teacher', 'Personnel'] WITH structureGroup as start, userStructure as end ",
+          "AND profile.name IN ['Teacher', 'Personnel'] WITH structureGroup as end, userStructure as start ",
+          "AND profile.name = 'Student' WITH structureGroup as start, userStructure as end ",
+          "AND profile.name = 'Relative' WITH structureGroup as start, userStructure as end "
+        ]
+      }
+    },
+    {
+      "name": "org.entcore~portal~1.6-SNAPSHOT",
+      "config": {
+        "port": 8017,
+        "auto-redeploy": false,
+        "mode": "dev",
+        "skin": "raw",
+        "path-prefix": "",
+        "urls": {
+          "userbook": "http://localhost:8090/userbook",
+          "auth": "http://localhost:8090/auth",
+          "portal": "http://localhost:8090",
+          "logoutCallback": "http://localhost:8090"
+        },
+        "admin-urls": [
+        {"name": "directory", "url": "http://localhost:8090/directory/admin"},
+        {"name": "history", "url": "http://localhost:8090/history/admin"},
+        {"name": "appRegistry", "url": "http://localhost:8090/appregistry/admin"},
+        {"name": "communication", "url": "http://localhost:8090/communication/admin"}
+        ]
+      }
+    },
+    {
+      "name": "org.entcore~conversation~1.6-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.conversation.Conversation",
+        "host": "http://localhost:8090",
+        "userbook-host": "http://localhost:8090",
+        "app-address": "/conversation/conversation",
+        "port": 8019,
+        "app-name" : "Messagerie",
+        "app-icon" : "conversation-large"
+      }
+    },
+    {
+      "name": "org.entcore~feeder~1.6-SNAPSHOT",
+      "config": {
+        "worker": true,
+        "preserve-cwd" : true,
+        "address" : "entcore.feeder",
+        "neo4j-address" : "wse.neo4j.persistor",
+        "import-files" : "/opt/one/be1d",
+        "feeder" : "BE1D"
+      }
+    }
+  ]
+}
