@@ -1,5 +1,10 @@
 apply plugin: 'scala'
 
+import groovy.text.SimpleTemplateEngine
+import java.util.Properties
+import java.io.File
+import java.io.FileWriter
+
 dependencies {
   testCompile "org.entcore:tests:$entCoreVersion"
   testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.0-M3a'
@@ -8,12 +13,34 @@ dependencies {
 repositories{
     mavenLocal()
 		maven {
-			credentials {
-				username 'admin'
-				password 'We_1234'
-			}
 			url "http://maven.web-education.net:8081/nexus/content/groups/public"
 		}
+}
+
+def createFile(propertiesFile, templateFileName, outputFileName) {
+	def props = new Properties()
+	props.load(new FileInputStream(new File(propertiesFile)))
+	def bindings = [:]
+	props.propertyNames().each{prop->
+		bindings[prop]=props.getProperty(prop)
+	}
+	def engine = new SimpleTemplateEngine()
+	def templateFile = new File(templateFileName)
+	def output = engine.createTemplate(templateFile).make(bindings)
+	def outputFile = new File(outputFileName)
+	def parentFile = outputFile.getParentFile()
+	if (parentFile != null)	parentFile.mkdirs()
+	def fileWriter = new FileWriter(outputFile)
+	fileWriter.write(output.toString())
+	fileWriter.close()
+}
+
+task generateConf(description:'Generate configuration file from properties file') << {
+  createFile("conf.properties", "ent-core.json.template", "ent-core.json")
+}
+
+task generateTestConf(description:'Generate test configuration file from test properties file') << {
+  createFile("test.properties", "ent-core.json.template", "ent-core.embedded.json")
 }
 
 task gatling(dependsOn: 'compileTestScala') << {
@@ -62,6 +89,10 @@ task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
   }
 }
 
+runEnt.doFirst {
+    tasks.generateTestConf.execute()
+}
+
 task stopEnt(type:Exec) {
   workingDir '.'
 
@@ -78,14 +109,19 @@ task stopEnt(type:Exec) {
   }
 }
 
-task integrationTest(dependsOn: [compileTestScala]) << {
+task integrationTest(dependsOn: compileTestScala) << {
     tasks.gatling.execute()
 }
 
 
 integrationTest.doFirst {
     tasks.runEnt.execute()
+}
 
+clean.doFirst {
+  delete "mods"
+  delete "ent-core.json"
+  delete "ent-core.embedded.json"
 }
 
 gradle.taskGraph.afterTask { task, TaskState state ->

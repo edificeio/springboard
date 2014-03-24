@@ -1,15 +1,19 @@
 {
   "main": "org.entcore.infra.Starter",
   "port": 8001,
-  "mode": "prod",
+  "mode": "${mode}",
   "auto-redeploy": false,
   "path-prefix": "infra",
+<% if ("true".equals(neo4jEmbedded)) { %>
+  "scripts-folder" : "${scriptsDirectory}",
+<% } %>
   "app-registry": {
     "name": "org.entcore~app-registry~1.6-SNAPSHOT",
     "config": {
       "main":"org.entcore.registry.AppRegistry",
       "auto-redeploy": false,
-      "mode": "dev",
+      "mode": "${mode}",
+      "ssl" : $ssl,
       "address" : "wse.app.registry",
       "port" : 8012
     }
@@ -20,8 +24,16 @@
       "worker": true,
       "multi-threaded": true,
       "address": "wse.neo4j.persistor",
+<% if ("true".equals(neo4jEmbedded)) { %>
+      "datastore-path": "${neo4jDatastore}",
+      "neo4j" : {
+      	"node_auto_indexing" : "true",
+      	"node_keys_indexable" : "externalId"
+      }
+<% } else { %>
       "server-uri": "http://localhost:7474/db/data/",
       "poolsize": 32
+<% } %>
     }
   },
   "external-modules": [
@@ -68,13 +80,63 @@
         "address": "wse.email"
       }
     },
+<% if ("true".equals(httpProxy)) { %>
+    {
+      "name": "com.wse~http-proxy~1.0.0",
+      "config": {
+        "port": 8090,
+        "proxies": [
+          {
+            "location": "/",
+            "proxy_pass": "http://localhost:8017"
+          },
+          {
+            "location": "/infra",
+            "proxy_pass": "http://localhost:8001"
+          },
+          {
+            "location": "/directory",
+            "proxy_pass": "http://localhost:8003"
+          },
+          {
+            "location": "/history",
+            "proxy_pass": "http://localhost:8006"
+          },
+          {
+            "location": "/auth",
+            "proxy_pass": "http://localhost:8009"
+          },
+          {
+            "location": "/workspace",
+            "proxy_pass": "http://localhost:8011"
+          },
+          {
+            "location": "/appregistry",
+            "proxy_pass": "http://localhost:8012"
+          },
+          {
+            "location": "/communication",
+            "proxy_pass": "http://localhost:8015"
+          },
+          {
+            "location": "/userbook",
+            "proxy_pass": "http://localhost:8003"
+          },
+          {
+            "location": "/conversation",
+            "proxy_pass": "http://localhost:8019"
+          }
+        ]
+      }
+    },
+<% } %>
     {
       "name": "com.wse.tracer~tracer~1.0.0",
       "config": {
         "auto-redeploy": false,
         "logger-name": "one.tracer",
         "address": "log.address",
-        "log-path": "data/log/"
+        "log-path": "${logDirectory}"
       }
     },
     {
@@ -83,14 +145,15 @@
         "main":"org.entcore.auth.Auth",
         "port": 8009,
         "auto-redeploy": false,
-        "mode": "dev",
+        "ssl" : $ssl,
+        "mode": "${mode}",
         "authenticationServer": {
-          "loginURL": "http://one/auth/login",
-          "logoutURL": "http://one/auth/logout",
-          "loginCallback": "http://one",
-          "logoutCallback": "http://one"
+          "loginURL": "${host}/auth/login",
+          "logoutURL": "${host}/auth/logout",
+          "loginCallback": "${host}",
+          "logoutCallback": "${host}"
         },
-        "host": "http://one"
+        "host": "${host}"
       }
     },
     {
@@ -98,15 +161,15 @@
       "config": {
         "main":"org.entcore.directory.Directory",
         "auto-redeploy": false,
-        "mode": "dev",
-        "host": "http://one",
-        "createdUserEmail" : true,
-        "classDefaultRoles" : true,
+        "ssl" : $ssl,
+        "mode": "${mode}",
+        "host": "${host}",
         "port": 8003,
         "workspace-url": "localhost",
         "workspace-port":8011,
         "workspace-prefix" : "/workspace",
         "user-book-data":{
+          "default-theme":"default",
           "default-avatar": "no-avatar.jpg",
           "default-mood" : "default",
           "hobbies": ["sport","cinema", "animals", "music", "places"]
@@ -118,8 +181,10 @@
       "config" : {
         "main":"org.entcore.history.History",
         "port": 8006,
-        "log-path": "/opt/one/history/",
-        "mode" : "dev"
+        "ssl" : $ssl,
+        "auto-redeploy": false,
+        "log-path": "${logDirectory}",
+        "mode" : "${mode}"
       }
     },
     {
@@ -127,9 +192,10 @@
       "config": {
         "main":"org.entcore.workspace.Workspace",
         "auto-redeploy": false,
-        "mode": "dev",
-        "host": "http://one",
-        "userbook-host": "http://one",
+        "mode": "${mode}",
+        "ssl" : $ssl,
+        "host": "${host}",
+        "userbook-host": "${host}",
         "app-name": "Espace documentaire",
         "app-address": "/workspace/workspace",
         "app-icon": "workspace-large",
@@ -151,7 +217,8 @@
       "config": {
         "main":"org.entcore.communication.Communication",
         "auto-redeploy": false,
-        "mode": "dev",
+        "ssl" : $ssl,
+        "mode": "${mode}",
         "port": 8015,
         "address" : "wse.communication",
         "defaultCommunicationRules" : [
@@ -177,7 +244,8 @@
       "config": {
         "port": 8017,
         "auto-redeploy": false,
-        "mode": "dev",
+        "ssl" : $ssl,
+        "mode": "${mode}",
         "skin": "raw",
         "path-prefix": "",
         "urls": {
@@ -198,8 +266,10 @@
       "name": "org.entcore~conversation~1.6-SNAPSHOT",
       "config": {
         "main":"org.entcore.conversation.Conversation",
-        "host": "http://one",
-        "userbook-host": "http://one",
+        "host": "${host}",
+        "ssl" : $ssl,
+        "auto-redeploy": false,
+        "userbook-host": "${host}",
         "app-address": "/conversation/conversation",
         "port": 8019,
         "app-name" : "Messagerie",
@@ -210,11 +280,10 @@
       "name": "org.entcore~feeder~1.6-SNAPSHOT",
       "config": {
         "worker": true,
-        "preserve-cwd" : true,
         "address" : "entcore.feeder",
         "neo4j-address" : "wse.neo4j.persistor",
-        "import-files" : "/opt/one/be1d",
-        "feeder" : "BE1D"
+        "import-files" : "${importDirectory}",
+        "feeder" : "${feeder}"
       }
     }
   ]

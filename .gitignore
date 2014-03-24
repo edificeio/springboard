@@ -23,3 +23,5 @@ mods
 data
 developer.id
 *.mod.json
+ent-core.embedded.json
+ent-core.json
