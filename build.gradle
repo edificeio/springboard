@@ -72,6 +72,18 @@ task gatling(dependsOn: 'compileTestScala') << {
   logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
 }
 
+task runEntMS(type:Exec, dependsOn: subprojects.copyMod) {
+  workingDir '.'
+
+  //on windows:
+  commandLine 'cmd', '/c', 'run.bat'
+
+  standardOutput = new ByteArrayOutputStream()
+
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
 
 task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
   workingDir '.'
@@ -93,6 +105,10 @@ runEnt.doFirst {
     tasks.generateTestConf.execute()
 }
 
+runEntMS.doFirst {
+    tasks.generateTestConf.execute()
+}
+
 task stopEnt(type:Exec) {
   workingDir '.'
 
@@ -101,6 +117,19 @@ task stopEnt(type:Exec) {
 
   //on linux
   commandLine './stop.sh'
+
+  standardOutput = new ByteArrayOutputStream()
+
+  ext.output = {
+    return standardOutput.toString()
+  }
+}
+
+task stopEntMS(type:Exec) {
+  workingDir '.'
+
+  //on windows:
+  commandLine 'cmd', '/c', 'stop.bat'
 
   standardOutput = new ByteArrayOutputStream()
 
