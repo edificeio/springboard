@@ -248,6 +248,7 @@
         "mode": "${mode}",
         "skin": "raw",
         "path-prefix": "",
+		"root-page": "/welcome",
         "urls": {
           "userbook": "/userbook",
           "auth": "/auth",
