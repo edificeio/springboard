@@ -72,7 +72,7 @@ task gatling(dependsOn: 'compileTestScala') << {
   logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
 }
 
-task runEntMS(type:Exec, dependsOn: subprojects.copyMod) {
+task runEntMS(type:Exec) {
   workingDir '.'
 
   //on windows:
@@ -85,7 +85,7 @@ task runEntMS(type:Exec, dependsOn: subprojects.copyMod) {
   }
 }
 
-task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
+task runEnt(type:Exec) {
   workingDir '.'
 
   //on windows:
@@ -107,6 +107,18 @@ runEnt.doFirst {
 
 runEntMS.doFirst {
     tasks.generateTestConf.execute()
+}
+
+subprojects {
+	afterEvaluate { project ->
+		project.tasks['copyMod'].doLast {
+			file('mods').mkdir()
+			copy {
+				into 'mods'
+				from "${project.name}/build/mods"
+			}
+		}
+	}
 }
 
 task stopEnt(type:Exec) {
@@ -158,3 +170,4 @@ gradle.taskGraph.afterTask { task, TaskState state ->
         tasks.stopEnt.execute()
     }
 }
+
