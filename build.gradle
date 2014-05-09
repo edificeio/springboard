@@ -109,6 +109,9 @@ runEntMS.doFirst {
     tasks.generateTestConf.execute()
 }
 
+// empty task to avoid failure if no subprojets are defined
+task copyMod {}
+
 subprojects {
 	afterEvaluate { project ->
 		project.tasks['copyMod'].doLast {
