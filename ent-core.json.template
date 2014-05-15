@@ -295,6 +295,7 @@
         "worker": true,
         "address" : "entcore.feeder",
         "neo4j-address" : "wse.neo4j.persistor",
+        "neo4j-aaf-extension-uri" : "http://localhost:7474",
         "import-files" : "${importDirectory}",
         "feeder" : "${feeder}"
       }
