@@ -72,27 +72,14 @@ task gatling(dependsOn: 'compileTestScala') << {
   logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
 }
 
-task runEntMS(type:Exec) {
-  workingDir '.'
-
-  //on windows:
-  commandLine 'cmd', '/c', 'run.bat'
-
-  standardOutput = new ByteArrayOutputStream()
-
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
 task runEnt(type:Exec) {
   workingDir '.'
 
-  //on windows:
-  commandLine 'cmd', '/c', 'run.bat'
-
-  //on linux
-  commandLine './run.sh'
+  if (System.env.OS != null && System.env.OS.contains('Windows')) {
+    commandLine 'cmd', '/c', 'run.bat'
+  } else {
+    commandLine './run.sh'
+  }
 
   standardOutput = new ByteArrayOutputStream()
 
@@ -102,10 +89,6 @@ task runEnt(type:Exec) {
 }
 
 runEnt.doFirst {
-    tasks.generateTestConf.execute()
-}
-
-runEntMS.doFirst {
     tasks.generateTestConf.execute()
 }
 
@@ -127,11 +110,11 @@ subprojects {
 task stopEnt(type:Exec) {
   workingDir '.'
 
-  //on windows:
-  commandLine 'cmd', '/c', 'stop.bat'
-
-  //on linux
-  commandLine './stop.sh'
+  if (System.env.OS != null && System.env.OS.contains('Windows')) {
+    commandLine 'cmd', '/c', 'stop.bat'
+  } else {
+    commandLine './stop.sh'
+  }
 
   standardOutput = new ByteArrayOutputStream()
 
@@ -140,18 +123,6 @@ task stopEnt(type:Exec) {
   }
 }
 
-task stopEntMS(type:Exec) {
-  workingDir '.'
-
-  //on windows:
-  commandLine 'cmd', '/c', 'stop.bat'
-
-  standardOutput = new ByteArrayOutputStream()
-
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
 
 task integrationTest(dependsOn: compileTestScala) << {
     tasks.gatling.execute()
