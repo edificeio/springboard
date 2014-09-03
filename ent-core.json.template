@@ -209,6 +209,7 @@
         "mode": "${mode}",
         "ssl" : $ssl,
         "host": "${host}",
+        "neo4jPluginUri" : "${neo4jUri}",
         "userbook-host": "${host}",
         "app-name": "Espace documentaire",
         "app-address": "/workspace/workspace",
