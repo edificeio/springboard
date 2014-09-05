@@ -133,6 +133,10 @@
             "proxy_pass": "http://localhost:8015"
           },
           {
+            "location": "/timeline",
+            "proxy_pass": "http://localhost:8016"
+          },
+          {
             "location": "/userbook",
             "proxy_pass": "http://localhost:8003"
           },
@@ -317,6 +321,17 @@
         "apply-communication-rules" : $applycommunication,
         "import-files" : "${importDirectory}",
         "feeder" : "${feeder}"
+      }
+    },
+    {
+      "name": "org.entcore~timeline~1.9-SNAPSHOT",
+      "config": {
+        "main":"org.entcore.timeline.Timeline",
+        "port": 8016,
+        "address" : "wse.timeline",
+        "auto-redeploy": false,
+        "ssl" : $ssl,
+        "mode": "${mode}"
       }
     },
     {
