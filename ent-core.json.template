@@ -113,10 +113,6 @@
             "proxy_pass": "http://localhost:8003"
           },
           {
-            "location": "/history",
-            "proxy_pass": "http://localhost:8006"
-          },
-          {
             "location": "/auth",
             "proxy_pass": "http://localhost:8009"
           },
@@ -148,15 +144,6 @@
       }
     },
 <% } %>
-    {
-      "name": "com.wse.tracer~tracer~1.0.0",
-      "config": {
-        "auto-redeploy": false,
-        "logger-name": "one.tracer",
-        "address": "log.address",
-        "log-path": "${logDirectory}"
-      }
-    },
     {
       "name": "org.entcore~auth~1.11-SNAPSHOT",
       "config": {
@@ -192,17 +179,6 @@
           "default-mood" : "default",
           "hobbies": ["sport","cinema", "animals", "music", "places"]
         }
-      }
-    },
-    {
-      "name": "org.entcore~history~1.11-SNAPSHOT",
-      "config" : {
-        "main":"org.entcore.history.History",
-        "port": 8006,
-        "ssl" : $ssl,
-        "auto-redeploy": false,
-        "log-path": "${logDirectory}",
-        "mode" : "${mode}"
       }
     },
     {
