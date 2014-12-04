@@ -1,13 +1,23 @@
+buildscript {
+  repositories {
+    mavenLocal()
+      maven {
+        url "http://maven.web-education.net/nexus/content/groups/public"
+      }
+  }
+  dependencies {
+    classpath "fr.wseduc:springboard-plugin:0.1-SNAPSHOT"
+  }
+}
 apply plugin: 'scala'
+apply plugin: 'springboard'
 
-import groovy.text.SimpleTemplateEngine
-import java.util.Properties
-import java.io.File
-import java.io.FileWriter
+configurations {
+  deployment
+}
 
 dependencies {
   testCompile "org.entcore:tests:$entCoreVersion"
-  testCompile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.0-M3a'
 }
 
 repositories{
@@ -15,81 +25,6 @@ repositories{
 		maven {
 			url "http://maven.web-education.net:8081/nexus/content/groups/public"
 		}
-}
-
-def createFile(propertiesFile, templateFileName, outputFileName) {
-	def props = new Properties()
-	props.load(new FileInputStream(new File(propertiesFile)))
-	def bindings = [:]
-	props.propertyNames().each{prop->
-		bindings[prop]=props.getProperty(prop)
-	}
-	def engine = new SimpleTemplateEngine()
-	def templateFile = new File(templateFileName)
-	def output = engine.createTemplate(templateFile).make(bindings)
-	def outputFile = new File(outputFileName)
-	def parentFile = outputFile.getParentFile()
-	if (parentFile != null)	parentFile.mkdirs()
-	def fileWriter = new FileWriter(outputFile)
-	fileWriter.write(output.toString())
-	fileWriter.close()
-}
-
-task generateConf(description:'Generate configuration file from properties file') << {
-  createFile("conf.properties", "ent-core.json.template", "ent-core.json")
-}
-
-task generateTestConf(description:'Generate test configuration file from test properties file') << {
-  createFile("test.properties", "ent-core.json.template", "ent-core.embedded.json")
-}
-
-task gatling(dependsOn: 'compileTestScala') << {
-  def simulations =  new java.io.File(sourceSets.test.output.classesDir.getPath() + File.separator + 'org' + File.separator + 'entcore' + File.separator + 'test' + File.separator + 'simulations')
-
-  logger.lifecycle(" ---- Executing all Gatling scenarios from: ${simulations} ----")
-  simulations.eachFileRecurse { file ->
-    if (file.isFile()) {
-      //Remove the full path, .class and replace / with a .
-      logger.debug("Tranformed file ${file} into")
-        def gatlingScenarioClass = (file.getPath() - (sourceSets.test.output.classesDir.getPath() + File.separator) - '.class')
-        .replace(File.separator, '.')
-
-        logger.debug("Tranformed file ${file} into scenario class ${gatlingScenarioClass}")
-        System.setProperty("gatling.http.connectionTimeout", "300000")
-        javaexec {
-          main = 'io.gatling.app.Gatling'
-            classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
-            args  '-sbf',
-          sourceSets.test.output.classesDir,
-          '-s',
-          gatlingScenarioClass,
-          '-rf',
-          'build/reports/gatling'
-        }
-    }
-  }
-
-  logger.lifecycle(" ---- Done executing all Gatling scenarios ----")
-}
-
-task runEnt(type:Exec) {
-  workingDir '.'
-
-  if (System.env.OS != null && System.env.OS.contains('Windows')) {
-    commandLine 'cmd', '/c', 'run.bat'
-  } else {
-    commandLine './run.sh'
-  }
-
-  standardOutput = new ByteArrayOutputStream()
-
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
-runEnt.doFirst {
-    tasks.generateTestConf.execute()
 }
 
 // empty task to avoid failure if no subprojets are defined
@@ -107,41 +42,8 @@ subprojects {
 	}
 }
 
-task stopEnt(type:Exec) {
-  workingDir '.'
-
-  if (System.env.OS != null && System.env.OS.contains('Windows')) {
-    commandLine 'cmd', '/c', 'stop.bat'
-  } else {
-    commandLine './stop.sh'
-  }
-
-  standardOutput = new ByteArrayOutputStream()
-
-  ext.output = {
-    return standardOutput.toString()
-  }
-}
-
-
-task integrationTest(dependsOn: compileTestScala) << {
-    tasks.gatling.execute()
-}
-
-
-integrationTest.doFirst {
-    tasks.runEnt.execute()
-}
-
 clean.doFirst {
   delete "mods"
   delete "ent-core.json"
   delete "ent-core.embedded.json"
 }
-
-gradle.taskGraph.afterTask { task, TaskState state ->
-    if (task == integrationTest) {
-        tasks.stopEnt.execute()
-    }
-}
-

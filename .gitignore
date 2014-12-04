@@ -25,3 +25,11 @@ developer.id
 *.mod.json
 ent-core.embedded.json
 ent-core.json
+ent-core.json.template
+run.bat
+run.sh
+sample-be1d/
+scripts/
+src/
+stop.bat
+stop.sh
