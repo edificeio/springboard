@@ -1,7 +1,7 @@
-# SpringBoard
+# A propos de SpringBoard
 
 Springboard est un conteneur de personnalisation et de lancement d'un portail basé sur les composants ENT Core.
-Il s'agit d'un template à dupliquer pour créer son projet spécifique de portail motoriser par ENT Core. 
+Il s'agit d'un template à dupliquer pour créer son projet spécifique de portail motoriser par ENT Core. Les modules (dépendances) ENT Core utiles pour l'éxécution de votre springboard sont téléchargés depuis les dépôts Maven du projet. 
 
 # Notes d'utilisation
 
@@ -40,6 +40,10 @@ Préparer le Springboard . Depuis son dossier de clonage (`path-to-our/springboa
 
 		gradle init
 		gradle generateConf
+
+Si Neo4j est en mode serveur (propriété de configuration  `neo4jEmbedded=false`) installer manuellement le schema :
+
+		neo4j-shell < scripts/schema.cypher
 
 Lancer la plateforme avec le Springboard
 
