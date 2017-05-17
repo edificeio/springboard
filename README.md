@@ -28,13 +28,15 @@ __Neo4J__
 | neo4jUri | http://localhost:7474 |
 
 __MongoDB__
+
 | Property | Value |
 | -------- | ----- |
 | dbName    | ${MONGO_DB_NAME} |
 | mongoHost | localhost |
 | mongoPort | 27017 |
 
-__Postgres__
+__Postgres__ (optionnal. usefull for application that needs relationnal data storage)
+
 | Property | Value |
 | -------- | ----- |
 | sqlUrl      | jdbc:postgresql://localhost:5432/$PSQL_DB_NAME?stringtype=unspecified |
@@ -48,4 +50,6 @@ __Skin__ (to map skin with domain and define skin's theme)
 |    skin   | leo |
 |    skins  | {"localhost:8090":"leo"} |
 |    themes | {"_id": "default","displayName": "default","path": "/assets/themes/leo/default/"},{"_id": "dyslexic","displayName": "dyslexic","path": "/assets/themes/leo/dyslexic/"} |
+
+
 

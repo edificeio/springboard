@@ -13,11 +13,13 @@ apply plugin: 'scala'
 apply plugin: 'springboard'
 
 configurations {
-  deployment
+  deployment {
+    transitive = false
+ }
 }
 
 dependencies {
-  testCompile "org.entcore:tests:$entCoreVersion"
+    testCompile "org.entcore:tests:$entCoreVersion"
 }
 
 repositories{
@@ -25,6 +27,8 @@ repositories{
 		maven {
 			url "http://maven.web-education.net/nexus/content/groups/public"
 		}
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  mavenCentral()
 }
 
 // empty task to avoid failure if no subprojets are defined

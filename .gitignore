@@ -14,6 +14,13 @@ out
 *.iml
 *.ipr
 *.iws
+*.css
+bower_components/
+assets/themes/*
+!assets/themes/ode
+assets/themes/ode/*
+!assets/themes/ode/overrides
+assets/widgets
 test-output
 test-results
 test-tmp
@@ -33,3 +40,7 @@ scripts/
 src/
 stop.bat
 stop.sh
+gulpfile.js
+package.json
+node_modules
+rev-manifest.json
