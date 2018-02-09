@@ -3,15 +3,15 @@
 Springboard is a boilerplate project to configure and run a education's portal based on ODE Frameworks.
 
 * It's extensible with your own applications and widget
-* It's customizable with ovverride of theme, template and translations and assets
+* It's customizable by ovverriding the theme, template, i18n file and others assets
 
 # Installation 
 
-Clone this repository and follow that [Insallation guide](https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/simple-install.html) 
+Clone this repository and follow that [Insallation guide](https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/) 
 
 # Main Properties
 
-To deep dive in configuration capabilities you can browse the [Properties Inventory](https://opendigitaleducation.gitbooks.io/reference-manual/content/advanced-topics/properties.html)
+To deep dive in configuration capabilities you can browse the [Properties Inventory](https://opendigitaleducation.gitbooks.io/reference-manual/content/ops/advanced-topics/properties-inventory.html)
 
 __General__
 
@@ -45,11 +45,9 @@ __Postgres__ (optionnal. usefull for application that needs relationnal data sto
 
 __Skin__ (to map skin with domain and define skin's theme)
     
-| Property | Value |
-| -------- | ----- |
-|    skin   | leo |
-|    skins  | {"localhost:8090":"leo"} |
-|    themes | {"_id": "default","displayName": "default","path": "/assets/themes/leo/default/"},{"_id": "dyslexic","displayName": "dyslexic","path": "/assets/themes/leo/dyslexic/"} |
-
+| Property   | Value |
+| ---------- | ----- |
+| skins      | {"localhost:8090":"ode", "localhost:9000":"ode""} |
+| assetsPath | ../.. |
 
 
