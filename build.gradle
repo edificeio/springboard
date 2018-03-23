@@ -2,7 +2,7 @@ buildscript {
   repositories {
     mavenLocal()
       maven {
-        url "http://maven.web-education.net/nexus/content/groups/public"
+        url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
       }
   }
   dependencies {
@@ -12,10 +12,21 @@ buildscript {
 apply plugin: 'scala'
 apply plugin: 'springboard'
 
+if (!hasProperty('odeUsername')) {
+  ext.odeUsername = ''
+}
+if (!hasProperty('odePassword')) {
+  ext.odePassword = ''
+}
+
 configurations {
   deployment {
     transitive = false
  }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 dependencies {
@@ -23,10 +34,24 @@ dependencies {
 }
 
 repositories{
-    mavenLocal()
-		maven {
-			url "http://maven.web-education.net/nexus/content/groups/public"
-		}
+  mavenLocal()
+  maven {
+    url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
+  }
+  maven {
+    url "https://maven.opendigitaleducation.com/nexus/content/repositories/ode-releases"
+    credentials {
+      username "${odeUsername}"
+      password "${odePassword}"
+    }
+  }
+  maven {
+    url "https://maven.opendigitaleducation.com/nexus/content/repositories/ode-snapshots"
+    credentials {
+      username "${odeUsername}"
+      password "${odePassword}"
+    }
+  }
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   mavenCentral()
 }
