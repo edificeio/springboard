@@ -173,8 +173,21 @@ do
     publish)
       publish
       ;;
+    help)
+      echo "
+                clean : clean springboard and docker's containers
+                 init : fetch files and artefacts usefull for springboard's execution
+         generateConf : generate an vertx configuration file (ent-core.json) from conf.properties
+                  run : run databases and vertx in distinct containers
+                 stop : stop containers
+      integrationTest : run integration tests
+           buildFront : fetch wigets and themes using Bower and run Gulp build. (/!\ first run can be long becouse of node-sass's rebuild).
+              archive : make an archive with folder /mods /assets /static
+              publish : upload the archive on nexus
+      "
+    ;;
     *)
-      echo "Invalid argument : $param"
+      echo "Invalid command : $param. Use one of next command [ help | clean | init | generateConf | run | stop | buildFront | archive | publish ]"
   esac
   if [ ! $? -eq 0 ]; then
     exit 1
