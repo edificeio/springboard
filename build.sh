@@ -24,7 +24,7 @@ then
 fi
 
 clean () {
-  rm -rf data scripts src ent*.json *.template deployments run.sh stop.sh *.tar.gz static default.properties bower_components traductions
+  rm -rf data scripts src ent*.json *.template deployments run.sh stop.sh *.tar.gz static default.properties bower_components traductions i18n
   if [ -e docker-compose.yml ]; then
     if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
       docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT chmod -R 777 mods/*
@@ -75,7 +75,6 @@ stop() {
 
 buildFront() {
   if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
-    #docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT sh -c "find mods/ -name view -exec find {} -name *.html \; | xargs chmod 777 && chmod 777 mods/*.jar"
     mv mods mods.old
     cp -r mods.old mods
     docker run --rm -v "$PWD"/mods.old:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT chmod -R 777 mods/*
@@ -86,35 +85,20 @@ buildFront() {
       docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rebuild node-sass --no-bin-links && npm install --no-bin-links && node_modules/bower/bin/bower cache clean && node_modules/gulp/bin/gulp.js build --max_old_space_size=5000"
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rebuild node-sass && npm install && node_modules/bower/bin/bower cache clean && node_modules/gulp/bin/gulp.js build"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rebuild node-sass && npm install && node_modules/bower/bin/bower cache clean && node_modules/gulp/bin/gulp.js build --max_old_space_size=5000"
   esac
   rm mods/*.jar
-#  if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
-    #docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT sh -c "find mods/ -name view -exec find {} -name *.html \; | xargs chmod 644"
- # fi
-  if [ -d static/help ]; then rm -r static/help; fi
-  mkdir -p static/help/application
   bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[A-Z0-9\-\.]*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
-  # TODO get asciidoc online help
-#  bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[A-Z0-9\-\.]*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; cp --remove-destination -rs ~/jobs/ong-asciidoc/workspace/application/$DEST/ static/help/application; done; exit 0'
-#  bash -c 'cp --remove-destination -rs ~/jobs/ong-asciidoc/workspace/application/userbook static/help/application/userbook'
-#  bash -c 'cp --remove-destination -rs ~/jobs/ong-asciidoc/workspace/assets static/help'
-#  bash -c 'cp --remove-destination -rs ~/jobs/ong-asciidoc/workspace/wp-content static/help'
-#  #bash -c 'cp --remove-destination -rs ~/jobs/ong-doc/workspace/help/userbook/application static/help'
-#  #bash -c 'cp --remove-destination -rs ~/jobs/ong-doc/workspace/help/userbook/wp-content static/help'
-#  bash -c "rm -r help/index.html* help/actualites* help/contact help/donec-eleifend-laoreet-libero-morbi-placerat-rutrum-dolor-molestie-lobortis-ex-porttitor-eu help/feed help/le-projet-one-laureat-e-education-2-fsnpia/ help/page-daccueil/ help/tag/ help/un-kit-de-developpement-et-dexecution-dapplications-web-dediees-a-leducation/ help/use* help/xmlrpc.php\?rsd; exit 0"
   mv static/app-registry static/appregistry
   mv static/collaborative-editor static/collaborativeeditor
   mv static/scrap-book static/scrapbook
   mv static/fake-sso static/sso
-  mv static/help/application/collaborative-editor static/help/application/collaborativeeditor
-  mv static/help/application/scrap-book static/help/application/scrapbook
   mv errors static/
   find static/help -type l -exec rename 's/index.html\?iframe\=true/index.html/' '{}' \;
-  #Ajout lang
-  if [ -e traductions/i18n ]; then
+  I18N_VERSION=`grep 'i18nVersion=' gradle.properties | sed 's/i18nVersion=//'`
+  if [ -e i18n ] && [ ! -z "$I18N_VERSION" ]; then
     rm -rf assets/i18n
-    mv traductions/i18n assets/
+    mv i18n assets/
   fi
 }
 
@@ -138,7 +122,8 @@ generateConf() {
 }
 
 integrationTest() {
-  VERTX_IP=`docker inspect ${NAME}_vertx_1 | grep '"IPAddress"' | head -1 | grep -Eow "[0-9\.]+"`
+  BASE_CONTAINER_NAME=`basename "$PWD" | sed 's/-//g'`
+  VERTX_IP=`docker inspect ${BASE_CONTAINER_NAME}_vertx_1 | grep '"IPAddress"' | head -1 | grep -Eow "[0-9\.]+"`
   sed -i "s|baseURL.*$|baseURL(\"http://$VERTX_IP:$PORT\")|" src/test/scala/org/entcore/test/simulations/IntegrationTest.scala
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle integrationTest
 }

@@ -23,6 +23,11 @@ configurations {
   deployment {
     transitive = false
  }
+ help {
+    transitive = false
+ }
+ i18n {
+ }
 }
 
 configurations.all {
@@ -31,6 +36,7 @@ configurations.all {
 
 dependencies {
     testCompile "org.entcore:tests:$entCoreVersion"
+    help "com.opendigitaleducation:application-help:$applicationHelpVersion"
 }
 
 repositories{
