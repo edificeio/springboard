@@ -1,3 +1,4 @@
+TEST
 # About SpringBoard
 
 Springboard is a boilerplate project to configure and run a education's portal based on ODE Frameworks.
