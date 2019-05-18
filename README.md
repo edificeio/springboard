@@ -2,12 +2,12 @@
 
 Springboard is a boilerplate project to configure and run a education's portal based on ODE Frameworks.
 
-* It's extensible with your own applications and widget
-* It's customizable by ovverriding the theme, template, i18n file and others assets
+* It's extensible with your own applications and widgets
+* It's customizable by overriding the theme, template, i18n file and others assets
 
 # Installation 
 
-Clone this repository and follow that [Insallation guide](https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/) 
+Clone this repository and follow that [Installation guide](https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/) 
 
 # Main Properties
 
@@ -35,7 +35,7 @@ __MongoDB__
 | mongoHost | localhost |
 | mongoPort | 27017 |
 
-__Postgres__ (optionnal. usefull for application that needs relationnal data storage)
+__Postgres__ (optional. useful for applications that needs relationnal data storage)
 
 | Property | Value |
 | -------- | ----- |
