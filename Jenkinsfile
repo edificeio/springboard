@@ -11,7 +11,7 @@ pipeline {
       }
       stage('Run') {
         steps {
-          sh './build.sh run'
+          sh './build.sh runJenkins'
         }
       }
       stage('Integration Tests') {

@@ -27,10 +27,11 @@ clean () {
   rm -rf data scripts src ent*.json *.template deployments run.sh stop.sh *.tar.gz static default.properties bower_components traductions i18n
   if [ -e docker-compose.yml ]; then
     if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
-      docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT chmod -R 777 mods/*
+      docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0.0 chmod -R 777 mods/*
     fi
+    docker-compose down
     docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
-    stop && docker-compose rm -f
+    #stop && docker-compose rm -f
     docker volume ls -qf dangling=true | xargs -r docker volume rm
   fi
 }
@@ -69,6 +70,16 @@ run() {
   docker-compose up -d vertx
 }
 
+runJenkins() {
+  sed -i 's/- "8090:8090"/#- "8090:8090"/' docker-compose.yml
+  sed -i 's/ports:/#ports:/' docker-compose.yml
+  docker-compose up -d neo4j
+  docker-compose up -d postgres
+  docker-compose up -d mongo
+  sleep 10
+  docker-compose up -d vertx
+}
+
 stop() {
   docker-compose stop
 }
@@ -77,7 +88,7 @@ buildFront() {
   if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
     mv mods mods.old
     cp -r mods.old mods
-    docker run --rm -v "$PWD"/mods.old:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0-SNAPSHOT chmod -R 777 mods/*
+    docker run --rm -v "$PWD"/mods.old:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.0.0 chmod -R 777 mods/*
     rm -rf mods.old
   fi
   case `uname -s` in
@@ -87,8 +98,8 @@ buildFront() {
     *)
       docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rebuild node-sass && npm install && node_modules/bower/bin/bower cache clean && node_modules/gulp/bin/gulp.js build --max_old_space_size=5000"
   esac
-  rm mods/*.jar
-  bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[A-Z0-9\-\.]*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
+  #rm mods/*.jar
+  bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~.*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
   mv static/app-registry static/appregistry
   mv static/collaborative-editor static/collaborativeeditor
   mv static/scrap-book static/scrapbook
@@ -104,7 +115,7 @@ buildFront() {
 
 archive() {
   #tar cfzh $NAME-static.tar.gz static
-  tar cfzh ${NAME}.tar.gz mods/* assets/* static
+  tar cfzh ${NAME}.tar.gz mods/*.jar assets/* static
 }
 
 publish() {
@@ -145,6 +156,9 @@ do
       ;;
     run)
       run
+      ;;
+    runJenkins)
+      runJenkins
       ;;
     stop)
       stop
