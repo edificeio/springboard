@@ -39,6 +39,12 @@ pipeline {
           sh './build.sh publish'
         }
       }
+      stage('Push Docker') {
+        steps {
+          sh 'docker build -t maven.opendigitaleducation.com/opendigitaleducation/entcore:latest .'
+          sh 'docker push maven.opendigitaleducation.com/opendigitaleducation/entcore:latest'
+        }
+      }
     }
 }
 
