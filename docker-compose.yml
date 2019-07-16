@@ -1,0 +1,48 @@
+vertx:
+  image: opendigitaleducation/vertx-service-launcher:1.0.0
+  user: "1000:1000"
+  ports:
+    - "8090:8090"
+#    - "5000:5000"
+  volumes:
+    - ./assets:/srv/springboard/assets
+    - ./mods:/srv/springboard/mods
+    - ./ent-core.json:/srv/springboard/conf/vertx.conf
+    - ./aaf-duplicates-test:/home/wse/aaf
+#    - ~/.m2:/home/vertx/.m2
+  links:
+    - neo4j
+    - postgres
+    - mongo
+#environment:
+#  MAVEN_REPOSITORIES: ''
+
+neo4j:
+  image: neo4j:3.1
+  volumes:
+    - ./neo4j-conf:/conf
+
+postgres:
+  image: postgres:9.5
+  environment:
+    POSTGRES_PASSWORD: We_1234
+    POSTGRES_USER: web-education
+    POSTGRES_DB: ong
+
+mongo:
+  image: mongo:3.6
+
+gradle:
+  image: gradle:4.5-alpine
+  working_dir: /home/gradle/project
+  volumes:
+    - ./:/home/gradle/project
+    - ~/.m2:/home/gradle/.m2
+    - ~/.gradle:/home/gradle/.gradle
+
+node:
+  image: opendigitaleducation/node
+  working_dir: /home/node/app
+  volumes:
+    - ./:/home/node/app
+    - ~/.npm:/.npm
