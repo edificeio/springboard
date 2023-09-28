@@ -1,0 +1,13 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "dependencies": {
+    "ode-ngjs-front": "dev",
+    "ode-ts-client": "dev",
+    "edifice-ts-client": "develop",
+    "entcore": "dev",
+    "ode-explorer": "dev"
+  }
+}

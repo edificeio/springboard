@@ -92,8 +92,8 @@ stop() {
 
 buildFront() {
   #dynamic theme
-  TH1D="${THEME1D:-ode}"
-  TH2D="${THEME2D:-ode}"
+  TH1D="${THEME1D:-one}"
+  TH2D="${THEME2D:-neo}"
   echo "Compiling theme1d=$TH1D and theme2d=$TH2D"
   sed -i'' -e "s/THEME1D/${TH1D}/" assets/themes/package.json
   sed -i'' -e "s/THEME2D/${TH2D}/" assets/themes/package.json
