@@ -1,0 +1,13 @@
+{
+  "name": "themes",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "dependencies": {
+    "theme-open-ent": "npm:ode-csslib-openent@dev",
+    "neoconnect": "npm:ode-csslib-openent-THEME2D@dev",
+    "ode-bootstrap": "npm:ode-bootstrap@dev",
+    "ode-bootstrap-neo": "npm:ode-bootstrap-neoBT2D@dev",
+    "edifice-bootstrap": "npm:edifice-bootstrap@develop"
+  }
+}

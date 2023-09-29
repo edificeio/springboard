@@ -39,10 +39,6 @@ deployments/
 node_modules/
 bower_components/
 rev-manifest.json
-assets/themes/*
-!assets/themes/ode
-assets/themes/ode/*
 !assets/themes/ode/overrides
 assets/widgets
-!assets/themes/.npmrc
 !assets/widgets/.npmrc
