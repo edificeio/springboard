@@ -19,6 +19,8 @@ if (!hasProperty('odePassword')) {
   ext.odePassword = ''
 }
 
+def itModules = ['entcore']
+
 configurations {
   deployment {
     transitive = false

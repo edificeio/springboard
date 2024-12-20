@@ -83,7 +83,7 @@ run() {
   chmod -R 777 assets/
   docker-compose up -d --scale vertx=0
   sleep 10
-  docker-compose up -d vertx
+  docker-compose up -d --scale vertx=1
 }
 
 stop() {
@@ -165,6 +165,7 @@ generateConf() {
   echo "DEFAULT_DOCKER_USER=`id -u`:`id -g`" > .env
   ENTCOREVERSION=$(grep entCoreVersion= gradle.properties | awk -F "=" '{ print $2 }' | sed -e "s/\r//")
   sed -i "s/entcoreVersion=.*/entcoreVersion=$ENTCOREVERSION/" conf.properties
+  sed -i "s/.*REMOVE_BY_CI.*//g" docker-compose.yml
   docker-compose run --rm $USER_OPTION gradle gradle generateConf
 }
 

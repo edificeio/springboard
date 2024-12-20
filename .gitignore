@@ -41,4 +41,12 @@ bower_components/
 rev-manifest.json
 !assets/themes/ode/overrides
 assets/widgets
+themes/npm*log
+widgets/npm*log
+npm*log
+.npm
+.npmrc
+package-lock.json
+!assets/js/.npmrc
+!assets/themes/.npmrc
 !assets/widgets/.npmrc
