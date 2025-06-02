@@ -1,0 +1,690 @@
+ {
+  "assets-path": "/srv/springboard",
+  "metricsOptions": {
+    "enabled": true,
+    "prometheusOptions": {
+      "enabled": true,
+      "startEmbeddedServer": true,
+      "embeddedServerOptions": {
+        "port": 9090,
+        "embeddedServerEndpoint": "/metrics/vertx"
+      }
+    }
+  },
+"services" : [
+{
+  "name": "io.vertx~mod-mongo-persistor~4.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "multi-threaded": true,
+  "config":{
+    "address": "wse.mongodb.persistor",
+    "http-service":false,   
+    "host": "mongo",
+    "port": 27017,
+    "db_name": "entcore",
+    "use_mongo_types": true,
+    "pool_size": 10
+  }
+},
+{
+  "name" : "fr.wseduc~mod-image-resizer~3.1-zookeeper-SNAPSHOT",
+  "worker": true,
+  "multi-threaded": true,
+  "waitDeploy" : true,
+  "config":{
+    "address" : "wse.image.resizer",
+    "fs-flat" : false,
+    
+   "s3": {
+    "uri": "http://localstack:4566",
+    "accessKey": "test",
+    "secretKey": "test",
+        "region": "us-east-1",
+    "bucket": "storage"
+  },   
+    "gridfs" : {
+      
+      "host": "mongo",
+      "port": 27017,
+      "db_name": "entcore",
+      "pool_size": 10
+    }
+    
+  }
+},
+{
+  "name": "fr.wseduc~mod-zip~3.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "config":{
+    "address": "entcore.zipper"
+  }
+},
+{
+  "name": "fr.wseduc~mod-postgresql~2.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "multi-threaded" : true,
+  "config":{
+    "address" : "sql.persistor",
+    "url" : "jdbc:postgresql://postgres:5432/ong?stringtype=unspecified",
+    "username" : "web-education",
+    "password" : "We_1234"
+  }
+},
+
+{
+  "name": "fr.wseduc~mod-postgresql~2.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "multi-threaded" : true,
+  "config":{
+    "address" : "sql.persistor.admin",
+    "url" : "jdbc:postgresql://postgres:5432/ong?stringtype=unspecified",
+    "username" : "web-education",
+    "password" : "We_1234"
+  }
+},
+
+{
+  "name": "com.opendigitaleducation~mod-json-schema-validator~2.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "multi-threaded" : true,
+  "config":{
+  }
+},
+
+{
+  "name": "fr.cgi~mod-sftp~2.0-SNAPSHOT",
+  "waitDeploy": true,
+  "config": {
+    "main" : "fr.cgi.sftp.Sftp",
+    "worker" : true,
+    "address" : "sftp"
+  }
+},
+
+
+{
+  "name": "fr.wseduc~mod-sms-proxy~2.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "config":{
+    "address" : "entcore.sms",
+    "providers" : {}
+  }
+},
+{
+  "name": "fr.wseduc~mod-pdf-generator~2.0-SNAPSHOT",
+  "waitDeploy" : true,
+  "worker": true,
+  "config":{
+    "address" : "entcore.pdf.generator"
+  }
+},
+
+{ "name": "org.entcore~infra~6.6-zookeeper-SNAPSHOT",
+"depends":["com.opendigitaleducation.mod-json-schema-validator","fr.wseduc.mod-postgresql","fr.wseduc.mod-zip","io.vertx.mod-mongo-persistor"],
+"waitDeploy" : true,
+"config" : {
+  "port": 8001,
+  "mode": "dev",
+  "auto-redeploy": false,
+  "path-prefix": "infra",
+  
+  "node-pdf-generator" : {
+    "pdf-connector-id": "exportpdf",
+    "auth": "",
+    "url" : "http://pdf:3000"
+    },
+  "key":"cle_a_changer",
+  "sql": true,
+  
+  
+  "cluster" : false,
+  "skins": {"localhost:8090":"neoconnect", "192.168.99.100:8090":"neoconnect"},
+  
+  
+    "file-system" : {
+      "path" : "/srv/storage/",
+      "flat" : false
+    },
+   "s3": {
+    "uri": "http://localstack:4566",
+    "accessKey": "test",
+    "secretKey": "test",
+        "region": "us-east-1",
+    "bucket": "storage"
+  },   
+    
+    
+    "emailConfig": {
+      "email": "noreply@entcore.org",
+      "host": "http://localhost:8090"
+    },
+    
+    "eventConfig": {
+     "user-blacklist" : []
+    },
+    "emailValidationConfig": {
+      "active": false,
+      "ttlInSeconds": 600,
+      "retryNumber": 5,
+      "waitInSeconds": 10
+	},
+      "explorerConfig": {
+          "enabled": false,
+          "postgres": true
+      },
+    "mongoConfig" : {
+      "hosts" : [ {
+        "host": "mongo",
+        "port": 27017
+      }],
+      "db_name": "entcore",
+      "use_mongo_types" : true
+    },
+    "postgresConfig":{
+        "host": "postgres",
+        "database": "ong",
+        "port": 5432,
+        "user": "web-education",
+        "password": "We_1234",
+        "pool-size": 50
+    },
+    "neo4jConfig" : {
+      
+      "server-uri": "http://neo4j:7474/db/data/",
+      
+      "slave-readonly": false,
+      "legacy-indexes" : [{ "for" : "node", "name" : "node_auto_index", "type" : "fulltext" }]
+    }
+  }},
+  {
+    "name": "org.entcore~app-registry~6.6-zookeeper-SNAPSHOT",
+    "depends":["org.entcore.infra"],
+    "waitDeploy" : true,
+    "config":{
+      "main":"org.entcore.registry.AppRegistry",
+      "auto-redeploy": false,
+      "csrf-token" : false,
+      "mode": "dev",
+      "ssl" : false,
+      "address" : "wse.app.registry",
+      "app-type": "SYSTEM",
+      "port" : 8012,
+ "explorer":false, 
+      "publicConf": {
+        
+      }
+    }
+  },
+
+  {
+      "name": "com.opendigitaleducation~session-redis~2.0-zookeeper-SNAPSHOT",
+      "config":{
+        "address" : "wse.session",
+        "listen-expired-session": false,
+        "slo": false,
+        "slo-oidc-backchannel-logout": false,
+        "session_timeout": 1800000
+        ,
+        "redisConfig": {
+          "pool-size": 50,
+          "maxPoolWaiting": 50000,
+          "maxWaitingHandlers": 50000,
+      "host": "redis",
+      "port": 6379
+        }
+
+      }
+    },
+
+
+    {
+      "name": "org.entcore~auth~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "path-prefix": "auth",
+        "app-type": "SYSTEM",
+        "port": 8009,
+        "auto-redeploy": false,
+        "ssl" : false,
+        "mode": "dev",
+        "email": "noreply@entcore.org",
+        "mandatory": {},
+        "activationAutoLogin" : false,
+        "teacherForgotPasswordEmail" : false,
+        
+        
+        "authenticationServer": {
+          "loginURL": "/auth/login",
+          "logoutURL": "/auth/logout",
+          "loginCallback": "",
+          "logoutCallback": ""
+        },
+        "passwordRegex" : ".*",
+        "host": "http://localhost:8090"
+      }
+    },
+    {
+      "name": "org.entcore~directory~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "path-prefix": "directory",
+        "auto-redeploy": false,
+        "ssl" : false,
+        "mode": "dev",
+        "host": "http://localhost:8090",
+        "csrf-token" : false,
+        "port": 8003,
+        "email": "noreply@entcore.org",
+        "app-name": "Directory",
+        "app-type": "SYSTEM",
+        "workspace-url": "localhost",
+        "workspace-port":8011,
+        "workspace-prefix" : "/workspace",
+        "activation-welcome-message" : false,
+        "createdUserEmail" : false,
+        "classDefaultRoles" : false,
+        "avatar-path": "/srv/storage/avatars/",
+        "avatar-flat": false,
+        "user-book-data":{
+          "default-theme":"default",
+          "default-avatar": "no-avatar.jpg",
+          "default-mood" : "default",
+          "hobbies": ["sport","cinema", "animals", "music", "places", "books"]
+        },
+        "publicConf": {
+           "feeders" : ["CSV"]
+           
+           ,"federatedAddress" : {}
+           
+           ,"userPosition": {
+              
+              "restrictCRUDToADMC": false
+              
+           }
+           
+        }
+      }
+    },
+    {
+      "name": "org.entcore~workspace~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "main":"org.entcore.workspace.Workspace",
+        "auto-redeploy": false,
+        "csrf-token" : false,
+        "mode": "dev",
+        "ssl" : false,
+        "host": "http://localhost:8090",
+        "neo4jPlugin" : false,
+        "userbook-host": "http://localhost:8090",
+        "app-name": "Espace documentaire",
+        "app-address": "/workspace/workspace",
+        "app-icon": "workspace-large",
+        "app-type": "END_USER",
+        "port": 8011,
+        "wsPort" : 6502,
+        "mongo-address" : "wse.mongodb.persistor",
+        "publicConf": {
+          
+        }
+      }
+    },
+    {
+      "name": "org.entcore~communication~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "main":"org.entcore.communication.Communication",
+        "auto-redeploy": false,
+        "ssl" : false,
+        "csrf-token" : false,
+        "mode": "dev",
+        "port": 8015,
+        "address" : "wse.communication",
+        "app-type": "SYSTEM",
+        "initDefaultCommunicationRules" :
+         
+            {
+              "Structure-Personnel" : {
+                "users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student"]
+              },
+              "Structure-Teacher" : {
+                "users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student"]
+              },
+              "Structure-Student" : {"users" : "OUTGOING"},
+              "Structure-Relative" : {"users" : "OUTGOING"},
+              "Class-Personnel" : {"users" : "OUTGOING"},
+              "Class-Teacher" : {"users" : "OUTGOING"},
+              "Class-Student" : {
+                "users" : "BOTH", "communiqueWith" : ["Class-Personnel", "Class-Teacher"]
+              },
+              "Class-Relative" : {
+                "users" : "BOTH", "Relative-Student" : "INCOMING", "communiqueWith" : ["Class-Personnel", "Class-Student", "Class-Teacher"]
+              }
+            }
+         ,
+       "publicConf": {
+         
+        }
+      }
+    },
+    {
+      "name": "org.entcore~portal~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "port": 8017,
+        "app-type": "SYSTEM",
+        "auto-redeploy": false,
+        "ssl" : false,
+        "csrf-token" : false,
+        "optionalFeature-cantoo-scriptPath": "",
+        "mode": "dev",
+        
+           "assets-path": "/srv/springboard",
+        
+        "path-prefix": "",
+                "root-page": "/timeline/timeline",
+        "urls": {
+          "userbook": "/userbook",
+          "auth": "/auth",
+          "portal": "/",
+          
+          "logoutCallback": "/"
+          
+        },
+        "admin-urls": [
+          {"name": "directory", "url": "/directory/admin-console"},
+          {"name": "appRegistry", "url": "/appregistry/admin-console"},
+          {"name": "communication", "url": "/communication/admin-console"},
+          {"name": "wizard", "url": "/directory/wizard"},
+          {"name": "timeline.history", "url": "/timeline/admin-history"},
+          {"name": "timeline", "url": "/timeline/admin-console", "allowed": ["SUPER_ADMIN"]},
+          {"name": "welcomeMessage", "url": "/auth/admin-welcome-message", "allowed": ["SUPER_ADMIN"]},
+          {"name": "flashMessage", "url": "/timeline/flashmsg/admin", "allowed": ["SUPER_ADMIN"]},
+          {"name": "embed", "url": "/infra/embed/admin", "allowed": ["SUPER_ADMIN"]}
+          
+          
+          
+          ,{"name": "edtudt", "url": "/directory/timetable"}
+          
+          
+          
+        ],
+        "widgets": [
+          
+           {
+             "name": "notes",
+             "path": "/public/template/notes.html",
+             "js": "/public/js/notes.js"
+           },
+           {
+             "name": "calendar",
+             "path": "/public/template/calendar.html",
+             "js": "/public/js/calendar.js"
+           }
+          
+        ],
+            "resources-applications": [
+              "workspace"
+            ]
+      }
+    },
+    {
+      "name": "org.entcore~conversation~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "main":"org.entcore.conversation.Conversation",
+        "host": "http://localhost:8090",
+        "mode": "dev",
+        "csrf-token" : false,
+        "ssl" : false,
+        "auto-redeploy": false,
+        "userbook-host": "http://localhost:8090",
+        "app-address": "/conversation/conversation",
+        "port": 8019,
+        "app-name" : "Messagerie",
+        "app-icon" : "conversation-large",
+        "app-type": "END_USER",
+        "sql": true,
+        "db-schema": "conversation",
+        "publicConf": {
+          
+        }
+      }
+    },
+    {
+      "name": "org.entcore~feeder~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "worker": true,
+      "config":{
+        "address" : "entcore.feeder",
+        "neo4j-address" : "wse.neo4j.persistor",
+        "apply-communication-rules" : true,
+        "import-files" : "/home/wse/aaf",
+        "feeder" : "AAF",
+        "mode" : "dev",
+        
+        
+        "auto-export" : false,
+	"import-person-in-charge": true,
+        "exclude-mark-duplicates-by-source" : ["CSV"],
+        "exporter" : "ELIOT",
+        "export-path" : "/tmp",
+        "export-destination" : ""
+      }
+    },
+    {
+      "name": "org.entcore~timeline~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{ "csrf-token": true,
+        "main":"org.entcore.timeline.Timeline",
+        "port": 8016,
+        "app-name": "Timeline",
+        "app-address": "/timeline/timeline",
+        "address" : "wse.timeline",
+        "app-type": "SYSTEM",
+        "auto-redeploy": false,
+        "ssl" : false,
+        "host": "http://localhost:8090",
+        "antiFloodClear": 60000,
+        "sql": true,
+        "db-schema": "flashmsg",
+        "mode": "dev"
+      }
+    },
+    {
+      "name": "org.entcore~cas~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "main" : "org.entcore.cas.Cas",
+        "port" : 8023,
+        "app-name" : "Cas",
+        "app-address" : "/cas",
+        "app-icon" : "cas-large",
+        "app-type": "SYSTEM",
+        "host": "http://localhost:8090",
+        "ssl" : false,
+        "auto-redeploy": false,
+        "userbook-host": "http://localhost:8090",
+        "external-login-uri" : "",
+        "integration-mode" : "HTTP",
+        "app-registry.port" : 8012,
+        "mode" : "dev",
+        "entcore.port" : 8009,
+        "services" : [
+          {
+            "class" : "org.entcore.cas.services.EliotRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.PronoteRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.KneRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.LeSiteTvRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.UniversalisRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class":"org.entcore.cas.services.AtNormandieRegisteredService",
+            "principalAttributeName":"id",
+            "patterns":[]
+          },
+          {
+            "class" : "org.entcore.cas.services.WebclasseursRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.UidRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.UuidRegisteredService",
+            "principalAttributeName" : "userId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.ProEPSRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.EducagriRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.EduMediaRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.GepiRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.MSELRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.GRRRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.LabomepRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.PearltreesRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.ExplorateurDeMetiersRegisteredService",
+            "principalAttributeName" : "id",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.SalvumRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.MilliwebRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.PmbRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.IjboxRegisteredService",
+            "principalAttributeName" : "externalId",
+            "patterns" : []
+          },
+          {
+            "class" : "org.entcore.cas.services.EnseignoRegisteredService",
+            "principalAttributeName" : "id",
+            "patterns" : []
+          },
+          {
+              "class": "org.entcore.cas.services.ElmsRegisteredService",
+              "principalAttributeName": "login",
+              "patterns": []
+          },
+          {
+              "class": "org.entcore.cas.services.EleaRegisteredService",
+              "principalAttributeName": "login",
+              "patterns": []
+          },
+          {
+            "class" : "org.entcore.cas.services.DefaultRegisteredService",
+            "principalAttributeName" : "login",
+            "patterns" : ["^(http|https):\/\/.*"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "org.entcore~archive~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config":{
+        "main":"org.entcore.archive.Archive",
+        "port": 8004,
+        "mode": "dev",
+        "host": "http://localhost:8090",
+        "ssl" : false,
+        "email": "noreply@entcore.org",
+        "auto-redeploy": false,
+        "app-name" : "Archive",
+        "app-address" : "/archive",
+        "app-icon" : "archive-large",
+        "app-type": "END_USER",
+        "expected-exports" : ["rack","workspace"]
+      }
+    },
+    {
+      "name": "org.entcore~admin~6.6-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config": {
+        "main":"org.entcore.admin.Admin",
+        "port": 8089,
+        "csrf-token" : false,
+        "ssl" : false,
+        "mode": "dev",
+        "auto-redeploy": false,
+        "host" : "http://localhost:8090",
+        "app-name" : "Admin",
+        "app-address" : "/admin",
+        "app-icon" : "admin-large",
+        "app-type": "END_USER"
+      }
+    }
+
+  ]
+}
