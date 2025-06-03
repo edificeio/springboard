@@ -1,0 +1,12 @@
+{
+  "zookeeperHosts":"zookeeper1,zookeeper2,zookeeper3",
+  "sessionTimeout":20000,
+  "connectTimeout":3000,
+  "rootPath":"ent-core",
+  "retry": {
+    "policy": "exponential_backoff",
+    "initialSleepTime":100,
+    "intervalTimes":10000,
+    "maxTimes":5
+  }
+}

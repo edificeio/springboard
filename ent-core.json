@@ -175,8 +175,14 @@
       "waitInSeconds": 10
 	},
       "explorerConfig": {
-          "enabled": false,
-          "postgres": true
+        "redisConfig": {
+          "pool-size": 50,
+          "maxPoolWaiting": 50000,
+          "maxWaitingHandlers": 50000,
+      "host": "redis",
+      "port": 6379,
+      "select": 10
+        }
       },
     "mongoConfig" : {
       "hosts" : [ {
@@ -685,6 +691,53 @@
         "app-type": "END_USER"
       }
     }
-
+    ,
+{
+      "name": "net.atos~actualites~2.0-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+      "config": {
+        "main" : "net.atos.entng.actualites.Actualites",
+        "port" : 8022,
+                "sql" : true,
+        "mongodb" : true,
+        "app-name" : "Actualites",
+        "app-address" : "/actualites",
+        "app-icon" : "actualites-large",
+        "app-type" : "END_USER",
+        "host": "http://localhost:8090",
+        "ssl" : false,
+        "auto-redeploy": false,
+        "userbook-host": "http://localhost:8090",
+        "app-registry.port" : 8012,
+        "mode" : "dev",
+        "entcore.port" : 8009,
+        "publicConf": {
+          
+        }
+      }
+    }
+,
+    {
+                "name": "net.atos~forum~2.0-zookeeper-SNAPSHOT",
+      "depends":["org.entcore.app-registry"],
+                "config": {
+                  "main" : "net.atos.entng.forum.Forum",
+                  "port" : 8024,
+                  "app-name" : "Forum",
+                  "app-address" : "/forum",
+                  "app-icon" : "forum-large",
+          "app-type" : "END_USER",
+                  "host": "http://localhost:8090",
+                  "ssl" : false,
+                  "auto-redeploy": false,
+                  "userbook-host": "http://localhost:8090",
+                  "app-registry.port" : 8012,
+                  "mode" : "dev",
+                  "entcore.port" : 8009,
+          "publicConf": {
+            
+          }
+                }
+    }
   ]
 }

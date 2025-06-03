@@ -460,6 +460,33 @@ services:
       - zookeeper3
 
 
+  vertx-actualites:
+    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    user: "$DEFAULT_DOCKER_USER"
+    environment:
+      - MODE=cluster
+      - ENABLED_SERVICES=net.atos~actualites
+    volumes:
+      - ./assets:/srv/springboard/assets
+      - ./mods:/srv/springboard/mods
+      - ./ent-core.json:/srv/springboard/conf/vertx.conf
+      - ./aaf-duplicates-test:/home/wse/aaf
+      - ~/.m2:/home/vertx/.m2
+      - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
+
+  vertx-forum:
+    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    user: "$DEFAULT_DOCKER_USER"
+    environment:
+      - MODE=cluster
+      - ENABLED_SERVICES=net.atos~forum
+    volumes:
+      - ./assets:/srv/springboard/assets
+      - ./mods:/srv/springboard/mods
+      - ./ent-core.json:/srv/springboard/conf/vertx.conf
+      - ./aaf-duplicates-test:/home/wse/aaf
+      - ~/.m2:/home/vertx/.m2
+      - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
 
   pdf:
     image: opendigitaleducation/node-pdf-generator:1.0.0
@@ -553,32 +580,15 @@ services:
       - zookeeper2
       - zookeeper3
 
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"   # API S3
-      - "9001:9001"   # Console web
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
-      MINIO_LOG_LEVEL: debug
-      MINIO_HTTP_TRACE: /tmp/minio-trace.log
-      MINIO_PROFILE_DIR: /tmp/minio-profile
-      MINIO_DIAGNOSTICS: on
-    command: server /data --console-address ":9001"
-
   localstack:
     image: localstack/localstack:latest
     ports:
-      - "4566:4566"     # LocalStack Gateway (S3, etc.)
-      - "4571:4571"     # Optional: edge port
+      - "4566:4566"
     environment:
       - SERVICES=s3
-      - DEBUG=1
-      - DATA_DIR=/tmp/localstack/data
       - AWS_DEFAULT_REGION=us-east-1
-      - LOCALSTACK_HOST=localhost
+    volumes:
+      - ./cluster-config/init-s3:/etc/localstack/init
 
 #   gradle:
 #     image: opendigitaleducation/gradle:4.5.1
@@ -621,3 +631,5 @@ services:
 #       DATA_ROOT_PATH: /home/k6/data
 #       ADMC_LOGIN: tom.mate
 #       ADMC_PASSWORD: password
+#
+
