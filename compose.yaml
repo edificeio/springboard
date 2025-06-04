@@ -2,155 +2,83 @@
 services:
 
   vertx-mongo-persistor:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-mongo-persistor:4.0-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=io.vertx~mod-mongo-persistor
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
     depends_on:
-      - neo4j
-      - postgres
       - mongo
-      - redis
       - zookeeper1
       - zookeeper2
       - zookeeper3
 
-
   vertx-image-resizer:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-image-resizer:3.1-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=fr.wseduc~mod-image-resizer
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
     depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
+      - localstack
 
   vertx-zip:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-zip:3.1-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=fr.wseduc~mod-zip
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-postgresql:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-postgresql:2.0-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=fr.wseduc~mod-postgresql
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
     depends_on:
-      - neo4j
       - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-json-schema-validator:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-json-schema-validator:2.0-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=com.opendigitaleducation~mod-json-schema-validator
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-pdf-generator:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mod-pdf-generator:2.0-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=fr.wseduc~mod-pdf-generator
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-infra:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/infra:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~infra
     volumes:
       - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
     depends_on:
       - neo4j
@@ -162,330 +90,154 @@ services:
       - zookeeper3
 
   vertx-app-registry:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/app-registry:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~app-registry
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-session:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/session-redis:2.0-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=com.opendigitaleducation~session-redis
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-auth:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/auth:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~auth
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-directory:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/directory:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~directory
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-workspace:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/workspace:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~workspace
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-communication:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/communication:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~communication
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-portal:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/springboard-portal:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~portal
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-conversation:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/conversation:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~conversation
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-feeder:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/feeder:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~feeder
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
       - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-timeline:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/timeline:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~timeline
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-cas:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/cas:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~cas
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-archive:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/archive:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~archive
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-admin:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/admin:6.6-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=org.entcore~admin
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
-    depends_on:
-      - neo4j
-      - postgres
-      - mongo
-      - redis
-      - zookeeper1
-      - zookeeper2
-      - zookeeper3
-
 
   vertx-actualites:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/actualites:2.0-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=net.atos~actualites
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
 
   vertx-forum:
-    image: opendigitaleducation/vertx-service-launcher:3.0-SNAPSHOT
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/forum:2.0-zookeeper-SNAPSHOT
     user: "$DEFAULT_DOCKER_USER"
     environment:
       - MODE=cluster
       - ENABLED_SERVICES=net.atos~forum
     volumes:
-      - ./assets:/srv/springboard/assets
-      - ./mods:/srv/springboard/mods
       - ./ent-core.json:/srv/springboard/conf/vertx.conf
-      - ./aaf-duplicates-test:/home/wse/aaf
-      - ~/.m2:/home/vertx/.m2
       - ./cluster-config/zookeeper.json:/srv/springboard/conf/zookeeper.json
 
   pdf:

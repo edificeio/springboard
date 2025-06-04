@@ -54,7 +54,7 @@
   }
 },
 {
-  "name": "fr.wseduc~mod-zip~3.0-SNAPSHOT",
+  "name": "fr.wseduc~mod-zip~3.1-SNAPSHOT",
   "waitDeploy" : true,
   "worker": true,
   "config":{
@@ -230,6 +230,7 @@
 
   {
       "name": "com.opendigitaleducation~session-redis~2.0-zookeeper-SNAPSHOT",
+    "depends":["org.entcore.infra"],
       "config":{
         "address" : "wse.session",
         "listen-expired-session": false,
