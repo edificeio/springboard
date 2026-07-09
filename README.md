@@ -5,10 +5,6 @@ Springboard is a boilerplate project to configure and run a education's portal b
 * It's extensible with your own applications and widget
 * It's customizable by ovverriding the theme, template, i18n file and others assets
 
-# Installation 
-
-Clone this repository and follow that [Insallation guide](https://opendigitaleducation.gitbooks.io/reference-manual/content/first-steps/) 
-
 # Main Properties
 
 To deep dive in configuration capabilities you can browse the [Properties Inventory](https://opendigitaleducation.gitbooks.io/reference-manual/content/ops/advanced-topics/properties-inventory.html)
