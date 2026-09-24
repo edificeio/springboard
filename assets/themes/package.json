@@ -4,10 +4,8 @@
   "description": "",
   "license": "ISC",
   "dependencies": {
-    "theme-open-ent": "npm:ode-csslib-openent@dev",
-    "neoconnect": "npm:ode-csslib-openent-THEME2D@dev",
-    "ode-bootstrap": "npm:ode-bootstrap@dev",
-    "ode-bootstrap-neo": "npm:ode-bootstrap-neoBT2D@dev",
-    "edifice-bootstrap": "npm:edifice-bootstrap@develop"
+    "entcore-css-lib": "npm:ode-csslib@4.3.11",
+    "openent": "npm:ode-csslib-openent@3.4.13",
+    "ode-bootstrap-neo": "npm:ode-bootstrap-neo@1.4.10"
   }
 }

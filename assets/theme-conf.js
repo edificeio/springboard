@@ -2,8 +2,8 @@ exports.conf = {
   overriding: [
     {
       parent: "theme-open-ent",
-      child: "neoconnect",
-      group: "neoconnect",
+      child: "openent",
+      group: "openent",
       skins: ["default", "dyslexic"],
       bootstrapVersion: "ode-bootstrap-neo",
     },

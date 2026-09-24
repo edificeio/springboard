@@ -1,0 +1,12 @@
+{
+  "name": "widgets",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "dependencies": {
+    "notes": "git+https://github.com/web-education/notes.git#0.2.0",
+    "calendar-widget": "git+https://github.com/web-education/calendar-widget.git#0.1.0",
+    "my-apps": "git+https://github.com/web-education/my-apps.git#0.1.3",
+    "school-widget": "git+https://github.com/opendigitaleducation/school-widget.git#1.0.0"
+  }
+}

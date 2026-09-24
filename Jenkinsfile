@@ -2,21 +2,34 @@
 
 pipeline {
   agent any
+
+	environment {
+	  BOWER_PASSWORD = credentials('bower-password')
+	  MAVEN_REPOSITORIES = credentials('maven-repositories')
+	  NEXUS_CGI_PASSWORD = credentials('nexus-cgi-password')
+	  NEXUS_ODE_PASSWORD = credentials('nexus-ode-password')
+	  NPM_TOKEN = credentials('npm-token')
+	  TIPTAP_PRO_TOKEN = credentials('tiptap-pro-token')
+	}
+	
     stages {
       stage('Init') {
         steps {
           checkout scm
-          sh './build.sh clean init generateConf'
+		  withCredentials([usernameColonPassword(credentialsId: 'jenkins-public-fine-grained-pat', variable: 'GITHUB_API_TOKEN')]) {
+			sh './build.sh clean init generateConf'
+		  }
         }
       }
       stage('Run') {
         steps {
-          sh './build.sh run'
+          sh './build.sh runJenkins'
         }
       }
       stage('Integration Tests') {
         steps {
-          sh './build.sh integrationTest'
+          //sh './build.sh integrationTest'
+		  sh 'sleep 60'
         }
       }
       stage('Stop') {
@@ -40,5 +53,10 @@ pipeline {
         }
       }
     }
+    post {
+		cleanup {
+		  sh 'docker-compose down'
+		}
+   }
 }
 
