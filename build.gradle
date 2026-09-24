@@ -18,8 +18,13 @@ if (!hasProperty('odeUsername')) {
 if (!hasProperty('odePassword')) {
   ext.odePassword = ''
 }
+if (!hasProperty('cgiUsername')) { 
+  ext.cgiUsername = ''
+}
+if (!hasProperty('cgiPassword')) {
+  ext.cgiPassword = ''
+}
 
-def itModules = ['entcore']
 
 configurations {
   deployment {
@@ -38,7 +43,6 @@ configurations.all {
 
 dependencies {
     testCompile "org.entcore:tests:$entCoreVersion"
-    help "com.opendigitaleducation:application-help:$applicationHelpVersion"
 }
 
 repositories{
@@ -58,6 +62,13 @@ repositories{
     credentials {
       username "${odeUsername}"
       password "${odePassword}"
+    }
+  }
+  maven {
+    url "https://nexus-pic2.support-ent.fr/repository/maven-releases"
+    credentials {
+      username "${cgiUsername}"
+      password "${cgiPassword}"
     }
   }
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }

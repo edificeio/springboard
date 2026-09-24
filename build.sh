@@ -5,24 +5,18 @@ NAME=`grep 'modname=' gradle.properties | sed 's/modname=//'`
 VERSION=`grep 'version=' gradle.properties | sed 's/version=//'`
 PORT=`grep 'skins=' conf.properties | grep -Eow "[0-9]+" | head -1 | awk '{ print $1 }'`
 
-if [[ "$*" == *"--no-user"* ]]
-then
-  USER_OPTION=""
-else
-  case `uname -s` in
-    MINGW* | Darwin*)
-      USER_UID=1000
-      GROUP_GID=1000
-      ;;
-    *)
-      if [ -z ${USER_UID:+x} ]
-      then
-        USER_UID=`id -u`
-        GROUP_GID=`id -g`
-      fi
-  esac
-  USER_OPTION="-u $USER_UID:$GROUP_GID"
-fi
+case `uname -s` in
+  MINGW*)
+    USER_UID=1000
+    GROUP_UID=1000
+    ;;
+  *)
+    if [ -z ${USER_UID:+x} ]
+    then
+      USER_UID=`id -u`
+      GROUP_GID=`id -g`
+    fi
+esac
 
 if [ -z ${BOWER_USERNAME:+x} ] && [ -e ~/.bower_credentials ]
 then
@@ -30,18 +24,20 @@ then
 fi
 
 clean () {
-  if [ -e docker-compose.yml ]; then
-    ## Delete pgdata
-    docker-compose run postgres bash -c "sleep 5 && rm -Rf /var/lib/postgresql/data"
-    #docker-compose run mongo bash -c "sleep 5 && rm -Rf /data/db"
-  fi
+  rm -Rf ./it
+  rm -Rf ./stress
+  mkdir -p ./it/src
+  mkdir -p ./it/resources
+  mkdir -p ./stress/src
+  mkdir -p ./stress/resources
+  rm -rf mods.old
   rm -rf data scripts src ent*.json *.template deployments run.sh stop.sh *.tar.gz static default.properties bower_components traductions i18n
   if [ -e docker-compose.yml ]; then
     if [ "$USER_UID" != "1000" ] && [ -e mods ]; then
-      docker run --rm $USER_OPTION -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.4.5 chmod -R 777 mods/*
+      docker run --rm -v "$PWD"/mods:/srv/springboard/mods opendigitaleducation/vertx-service-launcher:1.1.0 chmod -R 777 mods/*
     fi
     docker-compose down
-    docker-compose run --rm $USER_OPTION gradle gradle clean
+    docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
     docker volume ls -qf dangling=true | xargs -r docker volume rm
   fi
 }
@@ -53,34 +49,45 @@ init() {
   if [ ! -e node_modules ]; then
     mkdir node_modules
   fi
-
-  if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
+  if [ ! -e "?/.gradle/gradle.properties" ]
   then
+    mkdir -p "?/.gradle/"
     echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
     echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
-    SET_HOME_ENV_ARG=""
-  else
-    SET_HOME_ENV_ARG="-e GRADLE_USER_HOME=/home/gradle/.gradle -e USER_HOME=/home/gradle"
+    echo "cgiUsername=$NEXUS_CGI_USERNAME" >> "?/.gradle/gradle.properties"
+    echo "cgiPassword=$NEXUS_CGI_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
-  docker run --rm $USER_OPTION -v "$PWD":/home/gradle/project -v ~/.m2:/home/gradle/.m2 -v ~/.gradle:/home/gradle/.gradle -w /home/gradle/project $SET_HOME_ENV_ARG opendigitaleducation/gradle:4.5.1 gradle init
-  sed -i "s/8090:/$PORT:/" docker-compose.yml
+  docker run --rm -v "$PWD":/home/gradle/project -v ~/.m2:/home/gradle/.m2 -v ~/.gradle:/home/gradle/.gradle -w /home/gradle/project -u "$USER_UID:$GROUP_GID" gradle:4.5-alpine gradle init
+  sed -i "s/8090:/$PORT:/" docker-compose.yml.template
+  # Update github token
+  sed -i "s/GITHUB_API_TOKEN/$GITHUB_API_TOKEN/" assets/widgets/package.json
   if [ -e bower.json ]; then
     sed -i "s/bower_username:bower_password/$BOWER_USERNAME:$BOWER_PASSWORD/" bower.json
   fi
   if [ ! -z ${MAVEN_REPOSITORIES:+x} ]
   then
-    sed -i "s/#environment:/  environment:/" docker-compose.yml
+    sed -i "s/#environment:/  environment:/" docker-compose.yml.template
     MVN_REPOS=`echo $MAVEN_REPOSITORIES | sed 's/"/\\\\"/g'`
-    sed -i "s|#  MAVEN_REPOSITORIES: ''|    MAVEN_REPOSITORIES: '$MVN_REPOS'|" docker-compose.yml
+    sed -i "s|#  MAVEN_REPOSITORIES: ''|    MAVEN_REPOSITORIES: '$MVN_REPOS'|" docker-compose.yml.template
   fi
-  mkdir -p data
-  chmod -R 777 data
-  mkdir -p .config
-  # TODO add translate
+  # TODO add translate 
 }
 
 run() {
+  docker-compose up -d --scale vertx=0
+  sleep 10
+  docker-compose up -d --scale vertx=1
+}
+
+runJenkins() {
   chmod -R 777 assets/
+  sed -i 's#vertx-service-launcher:2.0.1#vertx-service-launcher:2.0.1-jenkins#' docker-compose.yml
+  sed -i 's/- "8090:8090"/#- "8090:8090"/' docker-compose.yml
+  sed -i 's/- "3000:3000"/#- "3000:3000"/' docker-compose.yml
+  sed -i 's/- "9200:9200"/#- "9200:9200"/' docker-compose.yml
+  sed -i 's/- "9300:9300"/#- "9300:9300"/' docker-compose.yml
+  sed -i 's/- "3100:3000"/#- "3100:3000"/' docker-compose.yml
+  sed -i 's/ports:/#ports:/' docker-compose.yml
   docker-compose up -d --scale vertx=0
   sleep 10
   docker-compose up -d --scale vertx=1
@@ -90,65 +97,60 @@ stop() {
   docker-compose stop
 }
 
+down() {
+  docker-compose down
+}
+
 buildFront() {
-  #dynamic theme
-  TH1D="${THEME1D:-one}"
-  TH2D="${THEME2D:-neo}"
-  echo "Compiling theme1d=$TH1D and theme2d=$TH2D"
-  sed -i'' -e "s/THEME1D/${TH1D}/" assets/themes/package.json
-  sed -i'' -e "s/THEME2D/${TH2D}/" assets/themes/package.json
-  sed -i'' -e "s/BT1D/${BT1D}/" assets/themes/package.json
-  sed -i'' -e "s/BT2D/${BT2D}/" assets/themes/package.json
   set -e
   #prepare
   chmod -R 777 assets/ || true
   find -L assets/js/ -mindepth 1 -maxdepth 1 -not -name 'package.json' -not -name '.npmrc' -exec rm -rf {} \;
   find -L assets/themes/ -mindepth 1 -maxdepth 1 -not -name 'package.json' -not -name '.npmrc' -exec rm -rf {} \;
-  if [[ $CI = "true" ]]
-  then
-    EXTRA_DOCKER_ARGS="-v /var/lib/jenkins:/var/lib/jenkins"
-  else
-    EXTRA_DOCKER_ARGS=""
-  fi
-  docker-compose run $EXTRA_DOCKER_ARGS -e NPM_TOKEN $USER_OPTION node sh -c "cd /home/node/app/assets/themes && yarn install && chmod -R 777 node_modules && cd /home/node/app/assets/js && pnpm config set store-dir /tmp/store && pnpm install  && chmod -R 777 node_modules"
+  find -L assets/widgets/ -mindepth 1 -maxdepth 1 -not -name 'package.json' -not -name '.npmrc' -exec rm -rf {} \;
+  #run pnpm install
+  sed -i "s/BOWER_USERNAME/$BOWER_USERNAME/" assets/widgets/package.json
+  sed -i "s/BOWER_PASSWORD/$BOWER_PASSWORD/" assets/widgets/package.json
+  docker run -e NPM_TOKEN --rm -v "$PWD":/home/node opendigitaleducation/node:18-alpine-pnpm sh -c "cd /home/node/assets/themes && yarn install && chmod -R 777 node_modules && cd /home/node/assets/widgets && yarn install  && chmod -R 777 node_modules && cd /home/node/assets/js && pnpm install  && chmod -R 777 node_modules"
   #clean
   find -L assets/js/ -mindepth 1 -maxdepth 1 -not -name 'node_modules' -exec rm -rf {} \;
   find -L assets/themes/ -mindepth 1 -maxdepth 1 -not -name 'node_modules' -exec rm -rf {} \;
+  find -L assets/widgets/ -mindepth 1 -maxdepth 1 -not -name 'node_modules' -exec rm -rf {} \;
   #move artefact
+  mv assets/widgets/node_modules/* assets/widgets/
   find -L ./assets/js/node_modules/ -mindepth 1 -maxdepth 2 -type d -name "dist" | sed -e "s/assets\/js\/node_modules\///"  | sed -e "s/dist//" | xargs -i mv ./assets/js/node_modules/{}dist/ ./assets/js/{}
   find -L ./assets/themes/node_modules/ -mindepth 1 -maxdepth 2 -type d -name "dist" | sed -e "s/assets\/themes\/node_modules\///"  | sed -e "s/dist//" | xargs -i mv ./assets/themes/node_modules/{}dist/ ./assets/themes/{}
   #clean node_modules
   rm -rf assets/js/package.json assets/themes/package.json assets/widgets/package.json
   rm -rf assets/js/node_modules assets/themes/node_modules assets/widgets/node_modules
-  rm -rf cdn/assets/.pnpm-store
-}
-
-archive() {
-  #tar cfzh $NAME-static.tar.gz static
-  rm -rf cdn/assets/.pnpm-store
-  tar cfzh ${NAME}.tar.gz mods/*.jar assets/* cdn/* static
-}
-
-deployCDN()
-{
-    #rm mods/*.jar
-  bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[-A-Za-z0-9\.]*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
+  docker run --rm -v "$PWD":/home/node opendigitaleducation/node:18-alpine-pnpm sh -c "rm -rf /home/node/assets/.pnpm-store"
+  #rm mods/*.jar
+  bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[A-Z0-9\-\.]*\(-[a-z]*\)*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
+  #bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~[A-Z0-9\-\.]*\(-SNAPSHOT\)*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
+  #bash -c 'for i in `ls -d mods/* | egrep -i -v "feeder|session|tests|json-schema|proxy|~mod|tracer"`; do DEST=$(echo $i | sed "s/[a-z\.\/]*~\([a-z\-]*\)~.*/\1/g"); mkdir static/`echo $DEST`; cp -r $i/public static/`echo $DEST`; done; exit 0'
   mv static/app-registry static/appregistry
-  mv static/collaborative-editor static/collaborativeeditor
-  mv static/scrap-book static/scrapbook
-  mv static/fake-sso static/sso
-  mv errors static/
   find static/help -type l -exec rename 's/index.html\?iframe\=true/index.html/' '{}' \;
-  I18N_VERSION=`grep 'i18nVersion=' gradle.properties | sed 's/i18nVersion=//'`
-  if [ -e i18n ] && [ ! -z "$I18N_VERSION" ]; then
-    rm -rf assets/i18n
-    mv i18n assets/
-  fi
+  
+  echo "$VERSION" > assets/version
 }
 
 archive() {
-  #tar cfzh $NAME-static.tar.gz static
-  tar cfzh ${NAME}.tar.gz mods/*.jar assets/* static
+  COUNT_THEME=$(find assets/themes/*/skins/default -name theme.css | grep -v 'bootstrap' | wc -l)
+  if [ "$COUNT_THEME" -eq "0" ]; then
+    echo "Error: 0 theme.css build"
+    exit 1
+  else
+    echo "$COUNT_THEME successful theme.css build"
+  fi
+  
+  if [ -e static/conversation ] && [ -e static/workspace ]; then
+    echo "Check statics successful"
+  else
+    echo "Error: missing statics. It usually happens when many springboards are built at the same time, try to rebuild."
+    exit 1
+  fi
+  
+  tar cfzh ${NAME}.tar.gz assets/* static
 }
 
 publish() {
@@ -156,31 +158,28 @@ publish() {
     *SNAPSHOT) nexusRepository='snapshots' ;;
     *)         nexusRepository='releases' ;;
   esac
-  mvn deploy:deploy-file -DgroupId=$GROUPID -DartifactId=$NAME -Dversion=$VERSION -Dpackaging=tar.gz -Dfile=${NAME}.tar.gz -DrepositoryId=ode-$nexusRepository -Durl=https://maven.opendigitaleducation.com/nexus/content/repositories/ode-$nexusRepository/
- # mvn deploy:deploy-file -DgroupId=$GROUPID -DartifactId=$NAME -Dversion=$VERSION -Dpackaging=tar.gz -Dclassifier=static -Dfile=${NAME}-static.tar.gz -DrepositoryId=ode-$nexusRepository -Durl=https://maven.opendigitaleducation.com/nexus/content/repositories/ode-$nexusRepository/
-
+  docker run --rm -v "$(echo ~/.m2)":/root/.m2 -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn deploy:deploy-file -DgroupId=$GROUPID -DartifactId=$NAME -Dversion=$VERSION -Dpackaging=tar.gz -Dfile=${NAME}.tar.gz -DrepositoryId=ode-$nexusRepository -Durl=https://maven.opendigitaleducation.com/nexus/content/repositories/ode-$nexusRepository/
 }
 
 generateConf() {
   echo "DEFAULT_DOCKER_USER=`id -u`:`id -g`" > .env
   ENTCOREVERSION=$(grep entCoreVersion= gradle.properties | awk -F "=" '{ print $2 }' | sed -e "s/\r//")
   sed -i "s/entcoreVersion=.*/entcoreVersion=$ENTCOREVERSION/" conf.properties
-  sed -i "s/.*REMOVE_BY_CI.*//g" docker-compose.yml
-  docker-compose run --rm $USER_OPTION gradle gradle generateConf
+  sed -i "s/.*REMOVE_BY_CI.*//g" docker-compose.yml.template
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle generateConf
+  docker run --rm $USER_OPTION -v "$PWD":/home/gradle/project -v ~/.m2:/home/gradle/.m2 -v ./?/.gradle:/home/gradle/.gradle -w /home/gradle/project $SET_HOME_ENV_ARG opendigitaleducation/gradle:4.5.1 gradle generateConf
 }
 
 integrationTest() {
-  #CONTAINER_NAME=`docker ps --format '{{.Names}}' | grep vertx`
-  #VERTX_IP=`docker inspect ${CONTAINER_NAME} | grep '"IPAddress"' | head -1 | grep -Eow "[0-9\.]+"`
-  sed -i "s|baseURL.*$|baseURL(\"http://vertx:$PORT\")|" src/test/scala/org/entcore/test/simulations/IntegrationTest.scala
-  docker-compose run --rm $USER_OPTION gradle gradle integrationTest
+  BASE_CONTAINER_NAME=`basename "$PWD" | sed 's/-//g'`
+  VERTX_IP=`docker inspect ${BASE_CONTAINER_NAME}_vertx_1 | grep '"IPAddress"' | head -1 | grep -Eow "[0-9\.]+"`
+  sed -i "s|baseURL.*$|baseURL(\"http://$VERTX_IP:$PORT\")|" src/test/scala/org/entcore/test/simulations/IntegrationTest.scala
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle integrationTest
 }
 
 for param in "$@"
 do
   case $param in
-    '--no-user')
-      ;;
     clean)
       clean
       ;;
@@ -196,14 +195,17 @@ do
     run)
       run
       ;;
+    runJenkins)
+      runJenkins
+      ;;
     stop)
       stop
       ;;
+	down)
+      down
+      ;;
     buildFront)
       buildFront
-      ;;
-    buildLocalFront)
-      buildLocalFront
       ;;
     archive)
       archive
@@ -211,24 +213,10 @@ do
     publish)
       publish
       ;;
-    help)
-      echo "
-                clean : clean springboard and docker's containers
-                 init : fetch files and artefacts usefull for springboard's execution
-         generateConf : generate an vertx configuration file (ent-core.json) from conf.properties
-                  run : run databases and vertx in distinct containers
-                 stop : stop containers
-      integrationTest : run integration tests
-           buildFront : fetch wigets and themes using Bower and run Gulp build. (/!\ first run can be long becouse of node-sass's rebuild).
-              archive : make an archive with folder /mods /assets /static
-              publish : upload the archive on nexus
-      "
-    ;;
     *)
-      echo "Invalid command : $param. Use one of next command [ help | clean | init | generateConf | run | stop | buildFront | archive | publish ]"
+      echo "Invalid argument : $param"
   esac
   if [ ! $? -eq 0 ]; then
     exit 1
   fi
 done
-
