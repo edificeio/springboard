@@ -4,9 +4,9 @@
   "description": "",
   "license": "ISC",
   "dependencies": {
-    "ode-ngjs-front": "1.4.30",
-    "ode-ts-client": "1.2.7",
-    "entcore": "4.8.20",
-    "ode-explorer": "2.6.15"
+    "ode-ngjs-front": "1.4.32",
+    "ode-ts-client": "1.2.8",
+    "entcore": "4.8.23",
+    "ode-explorer": "2.6.19"
   }
 }
